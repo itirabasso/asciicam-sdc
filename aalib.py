@@ -270,9 +270,6 @@ class Screen(object):
         settings = DEFAULT_RENDER_SETTINGS.clone()
         for k, v in kwargs.iteritems():
             setattr(settings, k, v)
-        setattr(settings, 'gamma', 3)
-        setattr(settings, 'constrast', 4)
-        setattr(settings, 'brightness', 60)
         context = self._context
         buffer = aa_image(context)
         if buffer is None:
