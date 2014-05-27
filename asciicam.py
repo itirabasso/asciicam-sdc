@@ -51,31 +51,52 @@ def screenshot(ascii, font, fontsize, terminalSize):
     img.save(filename)
     return filename
 
-def uploadPhoto(filename, msg, albumId=None):
+def uploadPhoto(graph, filename, msg, albumId=None):
     target = str(albumId) or "me"
+    # devolver un valor más feliz y no un print de mierda.
     print graph.put_photo(open(filename), message=msg, album_id=target + "/photos") #/290740541104463/photos")
-    # print graph.put_wall_post("Facebook, Tu API es una garcha.")
 
-# Test :D
 def getPageToken(graph, pageId):
     accounts = graph.get_object("me/accounts")
     if accounts:
         for acc in accounts['data']:
             if acc['id'] == pageId:
-                return acc['accessToken']
+                return acc['access_token']
 
     raise Exception("No sos admin de la fanpage " + str(pageId))
 
 parser = argparse.ArgumentParser(description='asciicam-sdc')
-parser.add_argument('--font', '-f', default='fonts/clacon.ttf', help="Path a cualquier fuente truetype. Default: clacon.ttf")
+parser.add_argument('--font', '-f', default='fonts/clacon.ttf', help='Path a cualquier fuente truetype. Default: clacon.ttf')
 parser.add_argument('--fontsize', '-s', default=20, type=int, help='Tamaño de la fuente. Default: 20')
-parser.add_argument('--token', '-t', default=False, help='User token')
+parser.add_argument('--token', '-t', default=False)
+parser.add_argument('--pageId', '-p', default=False)
+parser.add_argument('--albumId', '-a')
 
 args = parser.parse_args()
 
 font = args.font
 fontsize = args.fontsize
 userToken = args.token
+pageId = args.pageId
+albumId = args.albumId
+
+if not fb or not userToken:
+    print "Necesito un user token!"
+    graph = None    
+else:
+    # Armo un Graph un user token  
+    graph = facebook.GraphAPI(userToken)
+
+    # Levanto el page token 
+    # Si leen la doc van a ver que dice que necesitás un extended user token pero es falso.
+    try:
+        pageToken = getPageToken(graph, pageId)
+    except Exception as e:
+        print str(e)
+        sys.exit(1) 
+    print "page token: " + pageToken
+    # Armo un nuevo graph con el page token!
+    graph = facebook.GraphAPI(pageToken)
 
 # 0 es para agarrar cualquier device.
 cam = cv2.VideoCapture(0)
@@ -96,7 +117,7 @@ while rval:
     screen.put_image((0, 0), image)
 
     ascii = screen.render()
-    print ascii + "\n"
+    # print ascii + "\n"
 
 
     if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
@@ -107,19 +128,15 @@ while rval:
         if key ==  81 or key == 113: # q || Q
             break
         elif key == 70 or key == 102: # f || F
-            screenshot(ascii, font, fontsize, terminalSize)
-
+            filename = screenshot(ascii, font, fontsize, terminalSize)
+            uploadPhoto(graph, filename, "Mensajin", albumId)
+            # Deberiamos darle tiempo para que vean al respuesta del server?
+    
     time.sleep(0.0020)
     rval, image = cam.read()
 
 
 cam.release()
-
-if not fb or not userToken:
-    print "Necesito un user token!"
-    graph = None    
-else:    
-    graph = facebook.GraphAPI(userToken)
 
 # TODO : Automatizarlo
 # si expira el token: 
