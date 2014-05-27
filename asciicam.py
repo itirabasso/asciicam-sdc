@@ -118,8 +118,7 @@ while rval:
     screen.put_image((0, 0), image)
 
     ascii = screen.render()
-    # print ascii + "\n"
-
+    print ascii + "\n"
 
     if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
         key = ord(sys.stdin.read(1))
