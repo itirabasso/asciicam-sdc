@@ -37,13 +37,14 @@ def getTerminalSize():
 
 
 def screenshot(ascii, font, fontsize, terminalSize):
-    img = Image.new("RGBA", (terminalSize[1]*8,terminalSize[0]*15),(0,0,0))
+    img = Image.new("RGBA", (terminalSize[1]*8,terminalSize[0]*16),(0,0,0))
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(font, fontsize)
     lines = string.split(ascii, "\n")
     i = 0
     for l in lines:
-        draw.text((5, 15*i), l, font=font)
+        w,h = font.getsize(l)
+        draw.text((5, h*i), l, font=font)
         i+=1
     now = datetime.datetime.now()
     filename = 'output/' + now.strftime("%Y-%m-%d %H:%M:%S") + '.png'
