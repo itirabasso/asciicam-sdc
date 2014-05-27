@@ -5,10 +5,9 @@ import sys, time
 import json
 import string
 import argparse
-# import threading
 import datetime
 import Image, ImageFont, ImageDraw
-import termios, fcntl, struct, sys, os
+import termios, fcntl, struct, sys
 import select
 try:
     import cv2
@@ -29,20 +28,13 @@ except:
 
 def getTerminalSize():
     '''
-    Magia negra. 
+    Magia negra.
     '''
     s = struct.pack("HHHH", 0, 0, 0, 0)
     fd_stdout = sys.stdout.fileno()
     x = fcntl.ioctl(fd_stdout, termios.TIOCGWINSZ, s)
     return struct.unpack("HHHH", x)
 
-
-# def keyboardPoll():
-#     '''
-#     '''
-#     global key
-#     while True:
-#         key = ord(sys.stdin.read(1))
 
 def screenshot(ascii, font, fontsize, terminalSize):
     img = Image.new("RGBA", (terminalSize[1]*8,terminalSize[0]*15),(0,0,0))
@@ -55,17 +47,35 @@ def screenshot(ascii, font, fontsize, terminalSize):
         i+=1
     now = datetime.datetime.now()
     filename = 'output/' + now.strftime("%Y-%m-%d %H:%M:%S") + '.png'
+    # TODO : 
     img.save(filename)
+    return filename
+
+def uploadPhoto(filename, msg, albumId=None):
+    target = str(albumId) or "me"
+    print graph.put_photo(open(filename), message=msg, album_id=target + "/photos") #/290740541104463/photos")
+    # print graph.put_wall_post("Facebook, Tu API es una garcha.")
+
+# Test :D
+def getPageToken(graph, pageId):
+    accounts = graph.get_object("me/accounts")
+    if accounts:
+        for acc in accounts['data']:
+            if acc['id'] == pageId:
+                return acc['accessToken']
+
+    raise Exception("No sos admin de la fanpage " + str(pageId))
 
 parser = argparse.ArgumentParser(description='asciicam-sdc')
 parser.add_argument('--font', '-f', default='fonts/clacon.ttf', help="Path a cualquier fuente truetype. Default: clacon.ttf")
 parser.add_argument('--fontsize', '-s', default=20, type=int, help='Tamaño de la fuente. Default: 20')
+parser.add_argument('--token', '-t', default=False, help='User token')
 
 args = parser.parse_args()
 
 font = args.font
 fontsize = args.fontsize
-
+userToken = args.token
 
 # 0 es para agarrar cualquier device.
 cam = cv2.VideoCapture(0)
@@ -76,8 +86,8 @@ else:
 
 terminalSize = getTerminalSize()
 screen = aalib.AsciiScreen(width=terminalSize[1], height=terminalSize[0])
-w = int(cam.get(3)) #CV_CAP_PROP_FRAME_WIDTH)
-h = int(cam.get(4)) #CV_CAP_PROP_FRAME_HEIGHT)
+w = int(cam.get(3)) # CV_CAP_PROP_FRAME_WIDTH
+h = int(cam.get(4)) # CV_CAP_PROP_FRAME_HEIGHT
 
 while rval:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -86,8 +96,8 @@ while rval:
     screen.put_image((0, 0), image)
 
     ascii = screen.render()
-    print ascii
-    print "\n"
+    print ascii + "\n"
+
 
     if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
         key = ord(sys.stdin.read(1))
@@ -105,21 +115,14 @@ while rval:
 
 cam.release()
 
-
-if not fb: sys.exit(0) 
-# TODO : levantarlo de un properties o similar
-userToken = None
-
-if userToken == None:
-    print "Necesito un user token válido"
-    sys.exit(1)
-
-graph = facebook.GraphAPI(userToken)
+if not fb or not userToken:
+    print "Necesito un user token!"
+    graph = None    
+else:    
+    graph = facebook.GraphAPI(userToken)
 
 # TODO : Automatizarlo
 # si expira el token: 
 # print graph.extend_access_token(appId, appSecret)
 # sys.exit(0)
 
-print graph.put_photo(open(filename), message="SdC", album_id="me/photos") #/290740541104463/photos")
-# print graph.put_wall_post("Facebook, Tu API es una garcha.")
