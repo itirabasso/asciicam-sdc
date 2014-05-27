@@ -5,10 +5,11 @@ import sys, time
 import json
 import string
 import argparse
-import threading
-from datetime import datetime
+# import threading
+import datetime
 import Image, ImageFont, ImageDraw
-import termios, fcntl, struct, sys
+import termios, fcntl, struct, sys, os
+import select
 try:
     import cv2
     import aalib
@@ -19,6 +20,8 @@ except:
     sys.exit(1)
 try: 
     import facebook
+    fb = True
+
 except:
     print("No pude importar python-facebook-sdk pero es opcional así que está todo piola.")
     fb = False
@@ -34,15 +37,15 @@ def getTerminalSize():
     return struct.unpack("HHHH", x)
 
 
-def keyboardPoll():
-    '''
-    '''
-    global key
-    while True:
-        key = ord(sys.stdin.read(1))
+# def keyboardPoll():
+#     '''
+#     '''
+#     global key
+#     while True:
+#         key = ord(sys.stdin.read(1))
 
-def screenshot():
-    img = Image.new("RGBA", (terminalSize[0]*8,terminalSize[1]*15),(0,0,0))
+def screenshot(ascii, font, fontsize, terminalSize):
+    img = Image.new("RGBA", (terminalSize[1]*8,terminalSize[0]*15),(0,0,0))
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(font, fontsize)
     lines = string.split(ascii, "\n")
@@ -50,13 +53,12 @@ def screenshot():
     for l in lines:
         draw.text((5, 15*i), l, font=font)
         i+=1
-    # datetime.datetime.now()
-    # outputFile = 'output/' + now.strftime("%Y-%m-%d %H:%M:%S") + '.png'
+    now = datetime.datetime.now()
     filename = 'output/' + now.strftime("%Y-%m-%d %H:%M:%S") + '.png'
     img.save(filename)
 
 parser = argparse.ArgumentParser(description='asciicam-sdc')
-parser.add_argument('--font', '-f', default='font/clacon.ttf', help="Path a cualquier fuente truetype. Default: clacon.ttf")
+parser.add_argument('--font', '-f', default='fonts/clacon.ttf', help="Path a cualquier fuente truetype. Default: clacon.ttf")
 parser.add_argument('--fontsize', '-s', default=20, type=int, help='Tamaño de la fuente. Default: 20')
 
 args = parser.parse_args()
@@ -73,12 +75,10 @@ else:
     rval = False
 
 terminalSize = getTerminalSize()
-screen = aalib.AsciiScreen(width=terminalSize[0], height=terminalSize[1])
+screen = aalib.AsciiScreen(width=terminalSize[1], height=terminalSize[0])
 w = int(cam.get(3)) #CV_CAP_PROP_FRAME_WIDTH)
 h = int(cam.get(4)) #CV_CAP_PROP_FRAME_HEIGHT)
 
-frames = 0
-threading.Thread(target = keyboardPoll).start()
 while rval:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.resize(image, (screen.virtual_size))
@@ -86,17 +86,22 @@ while rval:
     screen.put_image((0, 0), image)
 
     ascii = screen.render()
-    # print ascii
-    # print "\n"
+    print ascii
+    print "\n"
 
-    if key ==  81 or key == 113: # q || Q
-        break
-    elif key == 70 or key == 102: # f || F
-        screenshot()
+    if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
+        key = ord(sys.stdin.read(1))
+    else:
+        key = -1
+    if key > 0:
+        if key ==  81 or key == 113: # q || Q
+            break
+        elif key == 70 or key == 102: # f || F
+            screenshot(ascii, font, fontsize, terminalSize)
 
-    key = -1
     time.sleep(0.0020)
     rval, image = cam.read()
+
 
 cam.release()
 
