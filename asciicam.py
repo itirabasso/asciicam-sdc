@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
+from __future__ import print_function
+
+import os
+import sys, time
 from time import sleep
 import json
 import Image
 import fcntl
 import struct
+import curses
 import string
 import termios
 import argparse
@@ -59,7 +63,7 @@ def screenshot(ascii, font, fontsize, terminalSize):
 
 def uploadPhoto(graph, filename, msg, albumId = None):
     target = (str(albumId) or "me") + "/photos"
-    print graph.put_photo(open(filename), message=msg, album_id=target)
+    print(graph.put_photo(open(filename), message=msg, album_id=target))
 
 
 def getPageToken(graph, pageId):
@@ -90,8 +94,9 @@ userToken = args.token
 pageId = args.pageId
 albumId = args.albumId
 
-if not fb or not userToken:
-    print "Necesito un user token!"
+
+if not fb or not (userToken):
+    print("Necesito un user token!")
     graph = None
 else:
     # Armo un Graph un user token
@@ -102,11 +107,12 @@ else:
     try:
         pageToken = getPageToken(graph, pageId)
     except Exception as e:
-        print str(e)
+        print(str(e))
         sys.exit(1)
-    print "page token: " + pageToken
+    print("page token: " + pageToken)
     # Armo un nuevo graph con el page token!
     graph = facebook.GraphAPI(pageToken)
+
 
 # 0 es para agarrar cualquier device.
 cam = cv2.VideoCapture(0)
@@ -115,19 +121,23 @@ if cam.isOpened():
 else:
     rval = False
 
-terminalSize = getTerminalSize()
-screen = aalib.AsciiScreen(width=terminalSize[1], height=terminalSize[0])
+tSize = getTerminalSize()
+
+size= (tSize[0]-1, tSize[1]-1)
+
+screen = aalib.AsciiScreen(width=size[1], height=size[0])
 w = int(cam.get(3))  # CV_CAP_PROP_FRAME_WIDTH
 h = int(cam.get(4))  # CV_CAP_PROP_FRAME_HEIGHT
+
+import curses
+scr = curses.initscr()
 
 while rval:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.resize(image, (screen.virtual_size))
     image = Image.fromarray(image)
     screen.put_image((0, 0), image)
-
     ascii = screen.render()
-    print ascii + "\n"
 
     if select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
         key = ord(sys.stdin.read(1))
@@ -137,16 +147,23 @@ while rval:
         if key == 81 or key == 113:  # q || Q
             break
         elif key == 70 or key == 102:  # f || F
-            filename = screenshot(ascii, font, fontsize, terminalSize)
+            filename = screenshot(ascii, font, fontsize, size)
             uploadPhoto(graph, filename, "Mensajin", albumId)
 # Deberiamos darle tiempo para que vean al respuesta del server?
 
-    sleep(0.0020)
+    try:
+        scr.addstr(0, 0, ascii)
+        scr.refresh()
+    except Exception as e:
+        print(e)
+        curses.endwin()
+        sys.exit(1)
+
+    sleep(0.01)
     rval, image = cam.read()
 
-
 cam.release()
-
+curses.endwin()
 # TODO : Automatizarlo
 # si expira el token:
 # print graph.extend_access_token(appId, appSecret)
