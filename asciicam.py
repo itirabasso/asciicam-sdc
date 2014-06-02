@@ -154,9 +154,9 @@ while rval:
             gvalue += gvalueStep
         elif key == ord('-'):
             gvalue -= gvalueStep
-        elif key == 81 or key == 113:  # q || Q
+        elif key == ord('q') or key == ord('Q'):
             break
-        elif key == 70 or key == 102:  # f || F
+        elif key == ord('f') or key == ord('F'):
             filename = screenshot(ascii, font, fontsize, size)
             if fb:
               uploadPhoto(graph, filename, "Mensajin", albumId)
