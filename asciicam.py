@@ -134,7 +134,6 @@ screen = aalib.AsciiScreen(width=size[1], height=size[0])
 w = int(cam.get(3))  # CV_CAP_PROP_FRAME_WIDTH
 h = int(cam.get(4))  # CV_CAP_PROP_FRAME_HEIGHT
 
-import curses
 scr = curses.initscr()
 gvalue = 1.3
 gvalueStep = 0.05
