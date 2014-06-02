@@ -57,9 +57,12 @@ def screenshot(ascii, font, fontsize, terminalSize):
         i += 1
     now = datetime.datetime.now()
     filename = 'output/' + now.strftime("%Y-%m-%d %H:%M:%S") + '.png'
-    img.save(filename)
+    try:
+      img.save(filename)
+    except Exception as e:
+      print("Deberias crear una carpeta output/ para guardar las imagenes.")
+      sys.exit(1)
     return filename
-
 
 def uploadPhoto(graph, filename, msg, albumId = None):
     target = (str(albumId) or "me") + "/photos"
@@ -133,20 +136,27 @@ h = int(cam.get(4))  # CV_CAP_PROP_FRAME_HEIGHT
 
 import curses
 scr = curses.initscr()
+gvalue=1.3
 
 while rval:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.resize(image, (screen.virtual_size))
     image = Image.fromarray(image)
     screen.put_image((0, 0), image)
-    ascii = screen.render()
+    ascii = screen.render(gamma=gvalue)
 
     if select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
         key = ord(sys.stdin.read(1))
     else:
         key = -1
     if key > 0:
-        if key == 81 or key == 113:  # q || Q
+        if key == ord('+'):
+            gvalue += 0.1
+        elif key == ord('-'):
+            gvalue -= 0.1
+        elif key == 81 or key == 113:  # q || Q
+            print()
+            print("GVALUE ", gvalue)
             break
         elif key == 70 or key == 102:  # f || F
             filename = screenshot(ascii, font, fontsize, size)
