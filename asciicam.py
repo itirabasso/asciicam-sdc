@@ -136,7 +136,8 @@ h = int(cam.get(4))  # CV_CAP_PROP_FRAME_HEIGHT
 
 import curses
 scr = curses.initscr()
-gvalue=1.3
+gvalue = 1.3
+gvalueStep = 0.05
 
 while rval:
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -151,12 +152,10 @@ while rval:
         key = -1
     if key > 0:
         if key == ord('+'):
-            gvalue += 0.1
+            gvalue += gvalueStep
         elif key == ord('-'):
-            gvalue -= 0.1
+            gvalue -= gvalueStep
         elif key == 81 or key == 113:  # q || Q
-            print()
-            print("GVALUE ", gvalue)
             break
         elif key == 70 or key == 102:  # f || F
             filename = screenshot(ascii, font, fontsize, size)
