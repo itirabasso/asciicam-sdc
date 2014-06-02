@@ -34,7 +34,6 @@ except:
     print("No pude importar python-facebook-sdk pero es opcional.")
     fb = False
 
-
 def getTerminalSize():
     '''
     Magia negra.
@@ -139,17 +138,17 @@ gvalue = 1.3
 gvalueStep = 0.05
 
 while rval:
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    image = cv2.resize(image, (screen.virtual_size))
-    image = Image.fromarray(image)
-    screen.put_image((0, 0), image)
-    ascii = screen.render(gamma=gvalue)
+    try:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = cv2.resize(image, (screen.virtual_size))
+        image = Image.fromarray(image)
+        screen.put_image((0, 0), image)
+        ascii = screen.render(gamma=gvalue)
+        if select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
+            key = ord(sys.stdin.read(1))
+        else:
+            key = -1
 
-    if select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
-        key = ord(sys.stdin.read(1))
-    else:
-        key = -1
-    if key > 0:
         if key == ord('+'):
             gvalue += gvalueStep
         elif key == ord('-'):
@@ -158,22 +157,20 @@ while rval:
             break
         elif key == ord('f') or key == ord('F'):
             filename = screenshot(ascii, font, fontsize, size)
-            if fb:
-              uploadPhoto(graph, filename, "Mensajin", albumId)
-# Deberiamos darle tiempo para que vean al respuesta del server?
+            if fb: uploadPhoto(graph, filename, "Mensajin", albumId)
+    # Deberiamos darle tiempo para que vean al respuesta del server?
 
-    try:
         gammaMsg = 'gamma=' + str(gvalue)
         ascii = ascii[:-len(gammaMsg)]
         scr.addstr(0, 0, ascii + gammaMsg)
         scr.refresh()
+
+        sleep(0.01)
+        rval, image = cam.read()
     except Exception as e:
         print(e)
         curses.endwin()
         sys.exit(1)
-
-    sleep(0.01)
-    rval, image = cam.read()
 
 cam.release()
 curses.endwin()
