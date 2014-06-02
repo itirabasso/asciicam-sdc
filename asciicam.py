@@ -63,8 +63,11 @@ def screenshot(ascii, font, fontsize, terminalSize):
 
 def uploadPhoto(graph, filename, msg, albumId = None):
     target = (str(albumId) or "me") + "/photos"
-    print(graph.put_photo(open(filename), message=msg, album_id=target))
-
+    if fb:
+      try:
+        print(graph.put_photo(open(filename), message=msg, album_id=target))
+      except Exception as e:
+        print(str(e))
 
 def getPageToken(graph, pageId):
     accounts = graph.get_object("me/accounts")
@@ -147,7 +150,8 @@ while rval:
             break
         elif key == 70 or key == 102:  # f || F
             filename = screenshot(ascii, font, fontsize, size)
-            uploadPhoto(graph, filename, "Mensajin", albumId)
+            if fb:
+              uploadPhoto(graph, filename, "Mensajin", albumId)
 # Deberiamos darle tiempo para que vean al respuesta del server?
 
     try:
