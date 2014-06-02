@@ -163,7 +163,9 @@ while rval:
 # Deberiamos darle tiempo para que vean al respuesta del server?
 
     try:
-        scr.addstr(0, 0, ascii)
+        gammaMsg = 'gamma=' + str(gvalue)
+        ascii = ascii[:-len(gammaMsg)]
+        scr.addstr(0, 0, ascii + gammaMsg)
         scr.refresh()
     except Exception as e:
         print(e)
