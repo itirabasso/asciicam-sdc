@@ -24,7 +24,7 @@ try:
     import numpy
 except:
     print("Necesitás instalar los siguientes packages:")
-    print("aalib (or libaa1), python-scipy, python-open-cv (v +2.x).")
+    print("aalib (or libaa1), python-scipy, python-opencv (v +2.x).")
     sys.exit(1)
 try:
     import facebook
@@ -93,7 +93,6 @@ fontsize = args.fontsize
 userToken = args.token
 pageId = args.pageId
 albumId = args.albumId
-
 
 if not fb or not (userToken):
     print("Necesito un user token!")
@@ -164,7 +163,3 @@ while rval:
 
 cam.release()
 curses.endwin()
-# TODO : Automatizarlo
-# si expira el token:
-# print graph.extend_access_token(appId, appSecret)
-# sys.exit(0)
