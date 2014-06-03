@@ -17,6 +17,7 @@ import argparse
 import datetime
 import ImageFont
 import ImageDraw
+import traceback
 from select import select
 try:
     import cv2
@@ -190,8 +191,9 @@ while rval:
         sleep(0.01)
         rval, image = cam.read()
     except Exception as e:
-        print(e)
         curses.endwin()
+        traceback.print_exc()
+        print(e)
         sys.exit(1)
 
 cam.release()
