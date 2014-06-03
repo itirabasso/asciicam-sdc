@@ -134,8 +134,11 @@ w = int(cam.get(3))  # CV_CAP_PROP_FRAME_WIDTH
 h = int(cam.get(4))  # CV_CAP_PROP_FRAME_HEIGHT
 
 scr = curses.initscr()
+bvalue = 1
+cvalue = 1
 gvalue = 1.3
 gvalueStep = 0.05
+cvalueStep = 1
 
 while rval:
     try:
@@ -143,26 +146,45 @@ while rval:
         image = cv2.resize(image, (screen.virtual_size))
         image = Image.fromarray(image)
         screen.put_image((0, 0), image)
-        ascii = screen.render(gamma=gvalue)
+        ascii = screen.render(gamma=gvalue, contrast=cvalue, brightness=bvalue)
         if select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
             key = ord(sys.stdin.read(1))
         else:
             key = -1
 
-        if key == ord('+'):
+        if key == ord('g'):
             gvalue += gvalueStep
-        elif key == ord('-'):
+        elif key == ord('G'):
             gvalue -= gvalueStep
+
+        elif key == ord('b'):
+            bvalue += cvalueStep
+        elif key == ord('B'):
+            bvalue -= cvalueStep
+
+        elif key == ord('c'):
+            cvalue += cvalueStep
+        elif key == ord('C'):
+            cvalue -= cvalueStep
+
         elif key == ord('q') or key == ord('Q'):
             break
         elif key == ord('f') or key == ord('F'):
             filename = screenshot(ascii, font, fontsize, size)
-            if fb: uploadPhoto(graph, filename, "Mensajin", albumId)
+            if fb:
+                uploadPhoto(
+                    graph,
+                    filename,
+                    "¡No te lo pierdas! Te esperamos 17 18 y 19 de junio en la Semana de la Computación 2014",
+                    albumId
+                )
     # Deberiamos darle tiempo para que vean al respuesta del server?
 
-        gammaMsg = 'gamma=' + str(gvalue)
-        ascii = ascii[:-len(gammaMsg)]
-        scr.addstr(0, 0, ascii + gammaMsg)
+        msg = 'brightness=' + str(bvalue) 
+        msg += ';contrast=' + str(cvalue)
+        msg += ';gamma=' + str(gvalue)
+        ascii = ascii[:-len(msg)]
+        scr.addstr(0, 0, ascii + msg)
         scr.refresh()
 
         sleep(0.01)
