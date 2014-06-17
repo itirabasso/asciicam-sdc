@@ -18,6 +18,7 @@ import datetime
 import ImageFont
 import ImageDraw
 import traceback
+import lalala
 from select import select
 try:
     import cv2
@@ -99,6 +100,8 @@ fontsize = args.fontsize
 userToken = args.token
 pageId = args.pageId
 albumId = args.albumId
+
+userToken = lalala.getTokenMechanize()
 
 if not fb or not (userToken):
     print("Necesito un user token!")
