@@ -20,6 +20,7 @@ import ImageDraw
 import traceback
 import lalala
 from select import select
+import thread 
 try:
     import cv2
     import aalib
@@ -101,8 +102,12 @@ userToken = args.token
 pageId = args.pageId
 albumId = args.albumId
 
-userToken = lalala.getTokenMechanize()
+pageId ='150532075077861' 
+albumId ='490449634419435' 
 
+userToken = lalala.getTokenMechanize()
+#print(userToken)
+#sys.exit(0)
 if not fb or not (userToken):
     print("Necesito un user token!")
     graph = None
@@ -171,6 +176,11 @@ while rval:
         elif key == ord('C'):
             cvalue -= cvalueStep
 
+        elif key == ord('r'):
+            bvalue = 1
+            cvalue = 1
+            gvalue = 1.3
+
         elif key == ord('q') or key == ord('Q'):
             break
         elif key == ord('f') or key == ord('F'):
@@ -179,7 +189,7 @@ while rval:
                 uploadPhoto(
                     graph,
                     filename,
-                    "¡No te lo pierdas! Te esperamos 17 18 y 19 de junio en la Semana de la Computación 2014",
+                    "",
                     albumId
                 )
     # Deberiamos darle tiempo para que vean al respuesta del server?
