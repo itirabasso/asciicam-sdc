@@ -68,6 +68,7 @@ def screenshot(ascii, font, fontsize, terminalSize):
 
 def uploadPhoto(graph, filename, msg, albumId = None):
     target = (str(albumId) or "me") + "/photos"
+    print(filename,msg,albumId)
     if fb:
       try:
         print(graph.put_photo(open(filename), message=msg, album_id=target))
@@ -76,6 +77,7 @@ def uploadPhoto(graph, filename, msg, albumId = None):
 
 def getPageToken(graph, pageId):
     accounts = graph.get_object("me/accounts")
+    print(accounts)
     if accounts:
         for acc in accounts['data']:
             if acc['id'] == pageId:
@@ -105,7 +107,10 @@ albumId = args.albumId
 pageId ='150532075077861' 
 albumId ='490449634419435' 
 
-userToken = lalala.getTokenMechanize()
+
+userToken="CAACEdEose0cBAN5gLtA6Nczr3JBkZBnQnM2I3ZAetfgyB0nzWIDZAB2FJWCGjHpLqwINGjdqoZA6aEIhAGp1DpIscdvjq9WFNZC6qNMOi8JMvGGC3ZC6sA6UUoU01j1wDpRgr9omkCywfAZAExN7RFxC5NwTtZBWjvNKPXWKqaSpJNct3UjOMwVRJLaLYvStOQOzHNJHqmz7CQZDZD"
+#userToken = "CAACEdEose0cBAN5gLtA6Nczr3JBkZBnQnM2I3ZAetfgyB0nzWIDZAB2FJWCGjHpLqwINGjdqoZA6aEIhAGp1DpIscdvjq9WFNZC6qNMOi8JMvGGC3ZC6sA6UUoU01j1wDpRgr9omkCywfAZAExN7RFxC5NwTtZBWjvNKPXWKqaSpJNct3UjOMwVRJLaLYvStOQOzHNJHqmz7CQZDZD"
+#userToken = lalala.getTokenMechanize()
 #print(userToken)
 #sys.exit(0)
 if not fb or not (userToken):
@@ -126,9 +131,14 @@ else:
     # Armo un nuevo graph con el page token!
     graph = facebook.GraphAPI(pageToken)
 
+#thread.start_new_thread(uploadPhoto, (graph, "output/2014-06-18 11:36:07.png","", albumId))
+#sys.exit(1)
 
 # 0 es para agarrar cualquier device.
+
 cam = cv2.VideoCapture(0)
+cam.set(3, 1024)
+cam.set(4, 720)
 if cam.isOpened():
     rval, image = cam.read()
 else:
@@ -151,6 +161,7 @@ cvalueStep = 1
 
 while rval:
     try:
+        cv2.imshow('frame', image)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.resize(image, (screen.virtual_size))
         image = Image.fromarray(image)
@@ -186,12 +197,10 @@ while rval:
         elif key == ord('f') or key == ord('F'):
             filename = screenshot(ascii, font, fontsize, size)
             if fb:
-                uploadPhoto(
-                    graph,
-                    filename,
-                    "",
-                    albumId
-                )
+		thread.start_new_thread(
+                uploadPhoto,
+   	        (graph, filename,"", albumId))
+                
     # Deberiamos darle tiempo para que vean al respuesta del server?
 
         msg = 'brightness=' + str(bvalue) 
